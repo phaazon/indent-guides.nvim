@@ -15,7 +15,7 @@ local get_default = function ()
 end
 
 local indent_get_matches = function()
-  local has_matches,matches = pcall(vim.fn.nvim_buf_get_option,'indent_guides_matches')
+  local has_matches,matches = pcall(api.nvim_buf_get_var,'indent_guides_matches')
   if has_matches then
     return matches
   else
@@ -36,8 +36,8 @@ end
 local indent_highlight_color =function ()
   local even = {'#2E323A','#34383F'}
   local odd = {'#34383F','#2E323A'}
-  api.nvim_command('hi IndeentGuidesEven guifg=' .. even[1] .. 'guibg='.. even[2])
-  api.nvim_command('hi IndeentGuidesOdd guifg=' .. odd[1] .. 'guibg='.. odd[2])
+  api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
+  api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
 end
 
 local nvim_range = function(_start,_end)
@@ -83,9 +83,13 @@ local indent_guides_enable = function(opts)
   indent_clear_matches()
 
   local matches = indent_get_matches()
+  if next(matches) == nil then
+    api.nvim_buf_set_var(0,'indent_guides_matches',{})
+  end
+
   local level_tbl = nvim_range(new_opts['indent_start_level'],new_opts['indent_levels'])
   for _,level in pairs(level_tbl) do
-    local group = 'IndeentGuides' .. ((level % 2 == 0) and 'Even' or 'Odd')
+    local group = 'IndentGuides' .. ((level % 2 == 0) and 'Even' or 'Odd')
     local column_start = (level -1 ) * indent_size + 1
 
     if new_opts['indent_space_guides'] > 0 then
@@ -125,6 +129,7 @@ local indent_guides_enable = function(opts)
     end
     vim.fn.nvim_buf_set_virtual_text(0,indent_namespace,line - 1,guides,{})
   end
+
   vim.fn.winrestview(view)
 end
 
