@@ -137,20 +137,8 @@ local error_handler = function(err)
     end
 end
 
-local indent_guides_event = function ()
-  local definition = {'BufEnter','WinEnter','FileType','TextChanged','InsertLeave'}
-  vim.api.nvim_command('augroup indeng_guides_event')
-  vim.api.nvim_command('autocmd!')
-  for _, def in ipairs(definition) do
-    local command = string.format('autocmd %s lua require("indent_guides").indent_guides_enable()',def)
-    vim.api.nvim_command(command)
-  end
-  vim.api.nvim_command('augroup END')
-end
-
 M.indent_guides_enable = function()
   xpcall(indent_guides_enable,error_handler)
-  indent_guides_event()
 end
 
 return M
