@@ -1,4 +1,5 @@
 local M = {}
+local ptbl =require('publibs.pltbl')
 local vim,api = vim,vim.api
 
 local get_default = function ()
@@ -108,28 +109,26 @@ local indent_guides_enable = function(opts)
   vim.fn.nvim_buf_clear_namespace(0,indent_namespace,1,-1)
 
   while true do
-    local line = vim.fn.search('^$', 'W')
-    if line == 0 then
+    local match = vim.fn.search('^$','W')
+    if match == 0 then
       break
     end
+    local indent = vim.fn.cindent(match)
+    if indent > 0 then
+      local guides = {{vim.fn['repeat'](' ',indent_size - 1),''}}
 
-    local idt = vim.fn.cindent(line)
-    if idt ~= 0 then
-      break
-    end
-
-    local guides = {{vim.fn['repeat'](' ',indent_size -1), ''}}
-    for _,level in pairs(nvim_range(1,idt / indent_size)) do
-      local guide = vim.fn['repeat'](' ',indent_size)
-      if level % 2 == 0 then
-        table.insert(guides,{guide,'IndentGuidesEven'})
-      else
-        table.insert(guides,{guide,'IndentGuidesOdd'})
+      for _,level in pairs(vim.fn.range(indent / indent_size)) do
+        local guide = vim.fn['repeat'](' ',indent_size)
+        if level % 2 == 0 then
+          table.insert(guides,{guide,'IndentGuidesOdd'})
+        else
+          table.insert(guides,{guide,'IndentGuidesOdd'})
+        end
       end
+      api.nvim_buf_set_virtual_text(0,indent_namespace,match - 1,guides,{})
+      print(ptbl.dump(guides))
     end
-    vim.fn.nvim_buf_set_virtual_text(0,indent_namespace,line - 1,guides,{})
   end
-
   vim.fn.winrestview(view)
 end
 
