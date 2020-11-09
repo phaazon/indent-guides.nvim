@@ -6,8 +6,8 @@ local get_default = function ()
     indent_levels = 30;
     indent_guide_size = 0;
     indent_start_level = 1;
-    indent_space_guides =1;
-    indent_tab_guides =1;
+    indent_space_guides = true;
+    indent_tab_guides = true;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'}
   }
@@ -50,9 +50,9 @@ end
 
 local indent_highlight_pattern= function(indent_pattern,column_start,indent_size)
   local pattern
-  pattern = '^' .. indent_pattern .. '*\\%' .. column_start .. 'v\zs'
+  pattern = '^' .. indent_pattern .. '*\\%' .. column_start .. 'v\\zs'
   pattern = pattern .. indent_pattern .. '*\\%' .. (column_start + indent_size) .. 'v'
-  pattern = pattern .. '\ze'
+  pattern = pattern .. '\\ze'
   return pattern
 end
 
@@ -92,14 +92,14 @@ local indent_guides_enable = function(opts)
     local group = 'IndentGuides' .. ((level % 2 == 0) and 'Even' or 'Odd')
     local column_start = (level -1 ) * indent_size + 1
 
-    if new_opts['indent_space_guides'] > 0 then
+    if new_opts['indent_space_guides']  then
       local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
-      table.insert(matches,soft_pattern)
+      table.insert(matches,vim.fn['matchadd'](group,soft_pattern))
     end
 
-    if new_opts['indent_tab_guides'] > 0 then
-      local hard_pattern = indent_highlight_pattern('\t',column_start,indent_size)
-      table.insert(matches,vim.fn.matchadd(group,hard_pattern))
+    if new_opts['indent_tab_guides'] then
+      local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
+      table.insert(matches,vim.fn['matchadd'](group,hard_pattern))
     end
   end
 
