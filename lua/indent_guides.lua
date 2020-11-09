@@ -1,19 +1,16 @@
 local M = {}
-local ptbl =require('publibs.pltbl')
 local vim,api = vim,vim.api
 
-local get_default = function ()
-  local default_opts = {
+M.default_opts = {
     indent_levels = 30;
     indent_guide_size = 0;
     indent_start_level = 1;
     indent_space_guides = true;
-    indent_tab_guides = true;
+    indent_tab_guides = false;
+    indent_pretty_guides = true;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'}
-  }
-  return default_opts
-end
+}
 
 local indent_get_matches = function()
   local has_matches,matches = pcall(api.nvim_buf_get_var,'indent_guides_matches')
@@ -57,11 +54,10 @@ local indent_highlight_pattern= function(indent_pattern,column_start,indent_size
   return pattern
 end
 
-local indent_guides_enable = function(opts)
-  local default_opts = get_default()
+local indent_guides_enable = function()
+  local new_opts = M.default_opts
   local indent_namespace = vim.fn.nvim_create_namespace('indent_guides_neovim')
   local buf_ft = vim.bo.filetype
-  local new_opts = vim.tbl_extend('keep',default_opts,opts)
 
   if vim.wo.diff or vim.tbl_contains(new_opts.exclude_filetypes,buf_ft) then
     indent_clear_matches()
@@ -104,6 +100,8 @@ local indent_guides_enable = function(opts)
     end
   end
 
+  if new_opts['indent_pretty_guides'] == false then return end
+
   local view = vim.fn.winsaveview()
   vim.fn.cursor(1,1)
   vim.fn.nvim_buf_clear_namespace(0,indent_namespace,1,-1)
@@ -118,15 +116,14 @@ local indent_guides_enable = function(opts)
       local guides = {{vim.fn['repeat'](' ',indent_size - 1),''}}
 
       for _,level in pairs(vim.fn.range(indent / indent_size)) do
-        local guide = vim.fn['repeat'](' ',indent_size)
+        local guide = ' '
         if level % 2 == 0 then
-          table.insert(guides,{guide,'IndentGuidesOdd'})
+          table.insert(guides,{guide,'IndentGuidesEven'})
         else
           table.insert(guides,{guide,'IndentGuidesOdd'})
         end
       end
       api.nvim_buf_set_virtual_text(0,indent_namespace,match - 1,guides,{})
-      print(ptbl.dump(guides))
     end
   end
   vim.fn.winrestview(view)
@@ -140,9 +137,20 @@ local error_handler = function(err)
     end
 end
 
-M.indent_guides_enable = function(opts)
-  local opt = opts or {}
-  indent_guides_enable(opt)
+local indent_guides_event = function ()
+  local definition = {'BufEnter','WinEnter','FileType','TextChanged','InsertLeave'}
+  vim.api.nvim_command('augroup indeng_guides_event')
+  vim.api.nvim_command('autocmd!')
+  for _, def in ipairs(definition) do
+    local command = string.format('autocmd %s lua require("indent_guides").indent_guides_enable()',def)
+    vim.api.nvim_command(command)
+  end
+  vim.api.nvim_command('augroup END')
+end
+
+M.indent_guides_enable = function()
+  xpcall(indent_guides_enable,error_handler)
+  indent_guides_event()
 end
 
 return M
