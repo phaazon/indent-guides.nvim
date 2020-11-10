@@ -18,7 +18,7 @@ command! -bar IndentGuidesEnable lua require('indent_guides').indent_guides_enab
 " Auto commands
 augroup indent_guides_event
   autocmd!
-  autocmd BufEnter,WinEnter,FileType,InsertLeave * lua require('indent_guides').indent_guides_enable()
+  autocmd BufEnter,WinEnter,FileType,TextChanged,InsertLeave *  IndentGuidesEnable
 augroup END
 
 let &cpo = s:save_cpo
