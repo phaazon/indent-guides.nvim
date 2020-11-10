@@ -8,7 +8,7 @@ M.default_opts = {
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = true;
-    indent_pretty_guides = true;
+    indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'}
 }
