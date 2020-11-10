@@ -116,7 +116,7 @@ local indent_guides_enable = function()
       local guides = {{vim.fn['repeat'](' ',indent_size - 1),''}}
 
       for _,level in pairs(vim.fn.range(indent / indent_size)) do
-        local guide = ' '
+        local guide = vim.fn['repeat'](' ',indent_size)
         if level % 2 == 0 then
           table.insert(guides,{guide,'IndentGuidesEven'})
         else
