@@ -10,7 +10,10 @@ M.default_opts = {
     indent_tab_guides = true;
     indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help'}
+    exclude_filetypes = {'help'};
+    -- TODO add rainbow mode support just like vscode
+    indent_rainbow_mode = false;
+    indent_debug = false
 }
 
 local indent_get_matches = function()
@@ -33,10 +36,12 @@ local indent_clear_matches = function()
 end
 
 local indent_highlight_color =function ()
-  local even = {'#2E323A','#34383F'}
-  local odd = {'#34383F','#2E323A'}
-  api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
-  api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
+  if  not M.default_opts['indent_rainbow_mode'] then
+    local even = {'#2E323A','#34383F'}
+    local odd = {'#34383F','#2E323A'}
+    api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
+    api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
+  end
 end
 
 local nvim_range = function(_start,_end)
@@ -131,7 +136,7 @@ local indent_guides_enable = function()
 end
 
 local error_handler = function(err)
-    if vim.g.indent_blankline_debug then
+    if M.default_opts.indent_debug then
         vim.api.nvim_command("echohl Error")
         vim.api.nvim_command('echom "' .. err .. '"')
         vim.api.nvim_command("echohl None")
