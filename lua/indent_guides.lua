@@ -90,12 +90,12 @@ local indent_guides_enable = function()
 
     if new_opts['indent_space_guides']  then
       local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
-      table.insert(matches,vim.fn['matchadd'](group,soft_pattern))
+      table.insert(matches,vim.fn.matchadd(group,soft_pattern))
     end
 
     if new_opts['indent_tab_guides'] then
       local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
-      table.insert(matches,vim.fn['matchadd'](group,hard_pattern))
+      table.insert(matches,vim.fn.matchadd(group,hard_pattern))
     end
   end
   api.nvim_buf_set_var(0,'indent_guides_matches',matches)
