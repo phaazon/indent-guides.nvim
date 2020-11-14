@@ -15,7 +15,7 @@ M.default_opts = {
 }
 
 local indent_get_matches = function()
-  local has_matches,matches = pcall(api.nvim_buf_get_var,'indent_guides_matches')
+  local has_matches,matches = pcall(api.nvim_win_get_var,'indent_guides_matches')
   if has_matches then
     return matches
   else
@@ -40,14 +40,6 @@ local indent_highlight_color =function ()
     api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
     api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
   end
-end
-
-local nvim_range = function(_start,_end)
-  local tbl = {}
-  for i = _start, _end, 1 do
-    table.insert(tbl,i)
-  end
-  return tbl
 end
 
 local indent_highlight_pattern= function(indent_pattern,column_start,indent_size)
@@ -83,7 +75,7 @@ local indent_guides_enable = function()
   indent_clear_matches()
 
   local matches = {}
-  local level_tbl = nvim_range(new_opts['indent_start_level'],new_opts['indent_levels'])
+  local level_tbl = vim.fn.range(new_opts['indent_start_level'],new_opts['indent_levels'])
   for _,level in pairs(level_tbl) do
     local group = 'IndentGuides' .. ((level % 2 == 0) and 'Even' or 'Odd')
     local column_start = (level -1 ) * indent_size + 1
@@ -98,7 +90,7 @@ local indent_guides_enable = function()
       table.insert(matches,vim.fn.matchadd(group,hard_pattern))
     end
   end
-  api.nvim_buf_set_var(0,'indent_guides_matches',matches)
+  api.nvim_win_set_var(0,'indent_guides_matches',matches)
 
   -- TODO: when neovim support virtual text in first column rewrite this
   -- local indent_namespace = vim.fn.nvim_create_namespace('indent_guides_neovim')
