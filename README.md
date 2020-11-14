@@ -4,6 +4,8 @@ rewrite [nathanaelkane/vim-indent-guides](https://github.com/nathanaelkane/vim-i
 
 using lua with support pretty indent mode  and rainbow indent mode
 
+## Usage
+
 ```lua
 require('indent_guides').default_opts = {
     indent_levels = 30;
@@ -15,8 +17,6 @@ require('indent_guides').default_opts = {
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'}
 }
-
-require('indent_guides').indent_guides_enable()
 ```
 
 ## Preview
