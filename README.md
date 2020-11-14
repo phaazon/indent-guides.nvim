@@ -18,3 +18,7 @@ require('indent_guides').default_opts = {
 
 require('indent_guides').indent_guides_enable()
 ```
+
+## Preview
+
+![1](https://user-images.githubusercontent.com/41671631/99146693-69bf1a80-26b5-11eb-862e-6f9f7edfb715.png)
