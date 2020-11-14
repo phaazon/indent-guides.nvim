@@ -13,7 +13,6 @@ M.default_opts = {
     exclude_filetypes = {'help'};
     -- TODO add rainbow mode support just like vscode
     indent_rainbow_mode = false;
-    indent_debug = false
 }
 
 local indent_get_matches = function()
@@ -82,7 +81,7 @@ local indent_guides_enable = function()
   end
 
   indent_highlight_color()
-  indent_clear_matches()
+  -- indent_clear_matchs()
 
   local matches = indent_get_matches()
   if next(matches) == nil then
@@ -136,16 +135,19 @@ local indent_guides_enable = function()
   -- vim.fn.winrestview(view)
 end
 
-local error_handler = function(err)
-    if M.default_opts.indent_debug then
-        vim.api.nvim_command("echohl Error")
-        vim.api.nvim_command('echom "' .. err .. '"')
-        vim.api.nvim_command("echohl None")
-    end
+function M.indent_guides_enable()
+  indent_guides_enable()
 end
 
-M.indent_guides_enable = function()
-  xpcall(indent_guides_enable,error_handler)
+function  M.indent_guides_augroup()
+  local definition = {'BufEnter','WinEnter','FileType'}
+  vim.api.nvim_command('augroup indent_guides_nvim')
+  vim.api.nvim_command('autocmd!')
+  for _, def in ipairs(definition) do
+    local command = string.format('autocmd %s lua require("indent_guides").indent_guides_enable()',def)
+    vim.api.nvim_command(command)
+  end
+  vim.api.nvim_command('augroup END')
 end
 
 return M

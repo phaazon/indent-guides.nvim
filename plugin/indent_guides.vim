@@ -16,10 +16,7 @@ let g:indent_guides_nvim =1
 command! -bar IndentGuidesEnable lua require('indent_guides').indent_guides_enable()
 
 " Auto commands
-augroup indent_guides_event
-  autocmd!
-  autocmd BufEnter,WinEnter,FileType *  IndentGuidesEnable
-augroup END
+lua require('indent_guides').indent_guides_augroup()
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
