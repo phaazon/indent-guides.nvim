@@ -27,7 +27,7 @@ local indent_clear_matches = function()
   local matches = indent_get_matches()
   if next(matches) ~= nil then
     for idx,match_id in pairs(matches) do
-      pcall(vim.fn.matchdelete(match_id))
+      vim.fn.matchdelete(match_id)
       table.remove(matches,idx)
     end
   end
@@ -74,7 +74,7 @@ local indent_guides_enable = function()
   indent_highlight_color()
   indent_clear_matches()
 
-  local matches = {}
+  local matches = indent_get_matches()
   local level_tbl = vim.fn.range(new_opts['indent_start_level'],new_opts['indent_levels'])
   for _,level in pairs(level_tbl) do
     local group = 'IndentGuides' .. ((level % 2 == 0) and 'Even' or 'Odd')
@@ -123,8 +123,21 @@ local indent_guides_enable = function()
   vim.fn.winrestview(view)
 end
 
+local indent_enabled = true
+
 function M.indent_guides_enable()
   indent_guides_enable()
+  if not indent_enabled then
+    M.indent_guides_augroup()
+  end
+end
+
+function M.indent_guides_disable()
+  indent_enabled = false
+  indent_clear_matches()
+  vim.api.nvim_command('augroup indent_guides_nvim')
+  vim.api.nvim_command('autocmd!')
+  vim.api.nvim_command('augroup END')
 end
 
 function  M.indent_guides_augroup()
