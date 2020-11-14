@@ -1,7 +1,5 @@
 ## NeoVim Indent Guides
 
-WIP!!
-
 ```lua
 require('indent_guides').default_opts = {
     indent_levels = 30;

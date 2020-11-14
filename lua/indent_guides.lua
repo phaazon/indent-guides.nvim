@@ -8,7 +8,7 @@ M.default_opts = {
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = true;
-    indent_pretty_guides = false;
+    -- indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'};
     -- TODO add rainbow mode support just like vscode
@@ -62,7 +62,6 @@ end
 
 local indent_guides_enable = function()
   local new_opts = M.default_opts
-  local indent_namespace = vim.fn.nvim_create_namespace('indent_guides_neovim')
   local buf_ft = vim.bo.filetype
 
   if vim.wo.diff or vim.tbl_contains(new_opts.exclude_filetypes,buf_ft) then
@@ -106,33 +105,35 @@ local indent_guides_enable = function()
     end
   end
 
-  if new_opts['indent_pretty_guides'] == false then return end
+  -- TODO: when neovim support virtual text in first column rewrite this
+  -- local indent_namespace = vim.fn.nvim_create_namespace('indent_guides_neovim')
+  -- if new_opts['indent_pretty_guides'] == false then return end
 
-  local view = vim.fn.winsaveview()
-  vim.fn.cursor(1,1)
-  vim.fn.nvim_buf_clear_namespace(0,indent_namespace,1,-1)
+  -- local view = vim.fn.winsaveview()
+  -- vim.fn.cursor(1,1)
+  -- vim.fn.nvim_buf_clear_namespace(0,indent_namespace,1,-1)
 
-  while true do
-    local match = vim.fn.search('^$','W')
-    if match == 0 then
-      break
-    end
-    local indent = vim.fn.cindent(match)
-    if indent > 0 then
-      local guides = {{vim.fn['repeat'](' ',indent_size - 1),''}}
+  -- while true do
+  --   local match = vim.fn.search('^$','W')
+  --   if match == 0 then
+  --     break
+  --   end
+  --   local indent = vim.fn.cindent(match)
+  --   if indent > 0 then
+  --     local guides = {{vim.fn['repeat'](' ',indent_size - 1),''}}
 
-      for _,level in pairs(vim.fn.range(indent / indent_size)) do
-        local guide = vim.fn['repeat'](' ',indent_size)
-        if level % 2 == 0 then
-          table.insert(guides,{guide,'IndentGuidesEven'})
-        else
-          table.insert(guides,{guide,'IndentGuidesOdd'})
-        end
-      end
-      api.nvim_buf_set_virtual_text(0,indent_namespace,match - 1,guides,{})
-    end
-  end
-  vim.fn.winrestview(view)
+  --     for _,level in pairs(vim.fn.range(indent / indent_size)) do
+  --       local guide = vim.fn['repeat'](' ',indent_size)
+  --       if level % 2 == 0 then
+  --         table.insert(guides,{guide,'IndentGuidesEven'})
+  --       else
+  --         table.insert(guides,{guide,'IndentGuidesOdd'})
+  --       end
+  --     end
+  --     api.nvim_buf_set_virtual_text(0,indent_namespace,match - 1,guides,{})
+  --   end
+  -- end
+  -- vim.fn.winrestview(view)
 end
 
 local error_handler = function(err)
