@@ -59,7 +59,7 @@ local indent_guides_enable = function()
     return
   end
 
-  local indent_size
+  local indent_size = 0
   if vim.bo.shiftwidth > 0 and vim.bo.expandtab then
     indent_size = vim.bo.shiftwidth
   else
