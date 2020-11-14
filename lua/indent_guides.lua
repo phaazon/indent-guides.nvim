@@ -1,4 +1,3 @@
-
 local M = {}
 local vim,api = vim,vim.api
 
@@ -144,7 +143,7 @@ function  M.indent_guides_augroup()
   vim.api.nvim_command('augroup indent_guides_nvim')
   vim.api.nvim_command('autocmd!')
   for _, def in ipairs(definition) do
-    local command = string.format('autocmd %s lua require("indent_guides").indent_guides_enable()',def)
+    local command = string.format('autocmd %s * lua require("indent_guides").indent_guides_enable()',def)
     vim.api.nvim_command(command)
   end
   vim.api.nvim_command('augroup END')
