@@ -15,7 +15,7 @@ M.default_opts = {
 }
 
 local indent_get_matches = function()
-  local has_matches,matches = pcall(api.nvim_win_get_var,'indent_guides_matches')
+  local has_matches,matches = pcall(api.nvim_win_get_var,0,'indent_guides_matches')
   if has_matches then
     return matches
   else
@@ -135,6 +135,7 @@ end
 function M.indent_guides_disable()
   indent_enabled = false
   indent_clear_matches()
+  api.nvim_win_del_var(0,'indent_guides_matches')
   vim.api.nvim_command('augroup indent_guides_nvim')
   vim.api.nvim_command('autocmd!')
   vim.api.nvim_command('augroup END')
