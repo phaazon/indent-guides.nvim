@@ -7,7 +7,7 @@ using lua with support pretty indent mode  and rainbow indent mode
 ## Usage
 
 ```lua
-require('indent_guides').default_opts = {
+require('indent_guides').options = {
     indent_levels = 30;
     indent_guide_size = 0;
     indent_start_level = 1;
