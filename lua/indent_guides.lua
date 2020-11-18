@@ -1,6 +1,17 @@
 local M = {}
 local vim,api = vim,vim.api
 
+local default_colors = {
+  even = {
+    fg = '#2E323A';
+    bg = '#34383F';
+  };
+  odd = {
+    fg = '#34383F';
+    bg = '#2E323A';
+  };
+};
+
 M.options = {
     indent_levels = 30;
     indent_guide_size = 0;
@@ -10,6 +21,8 @@ M.options = {
     indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help','dashboard','terminal'};
+    even_colors = default_colors.even;
+    odd_colors = default_colors.odd;
 }
 
 local indent_get_matches = function()
@@ -31,8 +44,19 @@ local indent_clear_matches = function()
 end
 
 local indent_highlight_color =function ()
-  local even = {'#2E323A','#34383F'}
-  local odd = {'#34383F','#2E323A'}
+  local new_opts = M.options
+  local even_colors = new_opts.even_colors or {}
+  local odd_colors = new_opts.odd_colors or {}
+
+  local even = {
+    even_colors.fg or default_colors.even.fg,
+    even_colors.bg or default_colors.even.bg,
+  }
+  local odd = {
+    odd_colors.fg or default_colors.odd.fg,
+    odd_colors.bg or default_colors.odd.bg,
+  }
+
   api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
   api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
 end
