@@ -1,8 +1,6 @@
 ## NeoVim Indent Guides
 
-rewrite [nathanaelkane/vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides)
-
-using lua with support pretty indent mode  and rainbow indent mode
+async render indent guides
 
 ## Usage
 
@@ -33,3 +31,7 @@ default
 ## Preview
 
 ![1](https://user-images.githubusercontent.com/41671631/99146693-69bf1a80-26b5-11eb-862e-6f9f7edfb715.png)
+
+## Acknowledgement
+
+[nathanaelkane/vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides)

@@ -78,14 +78,8 @@ local has_value = function(tbl,val)
   return false
 end
 
-local indent_guides_enable = function()
+local render_indent_guides = function()
   local new_opts = M.options
-  local buf_ft = vim.bo.filetype
-
-  if has_value(new_opts.exclude_filetypes,buf_ft) then
-    return
-  end
-
   local indent_size = 0
   if vim.bo.shiftwidth > 0 and vim.bo.expandtab then
     indent_size = vim.bo.shiftwidth
@@ -98,9 +92,6 @@ local indent_guides_enable = function()
     guide_size = indent_size
   end
 
-  indent_highlight_color()
-
-  local matches = indent_get_matches()
   local level_tbl = vim.fn.range(new_opts['indent_start_level'],new_opts['indent_levels'])
   for _,level in pairs(level_tbl) do
     local group = 'IndentGuides'
@@ -111,18 +102,43 @@ local indent_guides_enable = function()
     end
     local column_start = (level -1 ) * indent_size + 1
 
-    if new_opts['indent_space_guides']  then
-      local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
-      table.insert(matches,vim.fn.matchadd(group,soft_pattern))
-    end
+    coroutine.yield(group,column_start,guide_size,indent_size)
+  end
+end
 
-    if new_opts['indent_tab_guides'] then
-      local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
-      table.insert(matches,vim.fn.matchadd(group,hard_pattern))
+local indent_guides_enable = function()
+  local new_opts = M.options
+  local buf_ft = vim.bo.filetype
+
+  if has_value(new_opts.exclude_filetypes,buf_ft) then
+    return
+  end
+
+  indent_highlight_color()
+  local matches = indent_get_matches()
+  local indent_guides = coroutine.create(render_indent_guides)
+
+  local indent_render = function()
+    while true do
+      local _,group,column_start,guide_size,indent_size = coroutine.resume(indent_guides)
+      if column_start ~= nil then
+        if new_opts['indent_space_guides'] then
+          local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
+          table.insert(matches,vim.fn.matchadd(group,soft_pattern))
+        end
+        if new_opts['indent_tab_guides'] then
+          local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
+          table.insert(matches,vim.fn.matchadd(group,hard_pattern))
+        end
+      end
+      if coroutine.status(indent_guides) == 'dead' then
+        break
+      end
     end
   end
-  api.nvim_win_set_var(0,'indent_guides_matches',matches)
 
+  indent_render()
+  api.nvim_win_set_var(0,'indent_guides_matches',matches)
 end
 
 local indent_enabled = true
