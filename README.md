@@ -14,8 +14,8 @@ require('indent_guides').options = {
     indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help'}
-    even_colors = color code here;
-    odd_colors = color code here;
+    even_colors = { fg color , bg color };
+    odd_colors = { fg color , bg color };
 }
 ```
 
