@@ -16,10 +16,7 @@ let g:indent_guides_nvim =1
 command! -bar IndentGuidesEnable lua require('indent_guides').indent_guides_enable()
 command! -bar IndentGuidesDisable lua require('indent_guides').indent_guides_disable()
 
-lua <<EOF
-" Auto commands
-lua require('indent_guides').indent_guides_augroup()
-EOF
+v:lua.require('indent_guides').indent_guides_augroup()
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
