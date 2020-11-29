@@ -18,7 +18,6 @@ M.options = {
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = false;
-    indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help','dashboard','dashpreview'};
     even_colors = default_colors.even;
@@ -118,10 +117,14 @@ local indent_guides_enable = function()
     return
   end
 
-  indent_highlight_color()
-  local matches = indent_get_matches()
-  local indent_guides = coroutine.create(render_indent_guides)
+  if next(indent_get_matches()) ~= nil then
+    return
+  end
 
+  indent_highlight_color()
+
+  local indent_guides = coroutine.create(render_indent_guides)
+  local matches = {}
   local indent_render = function()
     while true do
       local _,group,column_start,guide_size,indent_size = coroutine.resume(indent_guides)
