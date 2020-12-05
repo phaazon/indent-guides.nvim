@@ -28,7 +28,7 @@ default
 
 ## TODO
 
-- rainbow mode just like vscode ? we really need this?
+- Enhance when [neovim #13420](https://github.com/neovim/neovim/issues/13420) support.
 
 ## Preview
 
