@@ -18,9 +18,8 @@ M.options = {
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = false;
-    indent_pretty_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help','dashboard','terminal'};
+    exclude_filetypes = {'help','dashboard','dashpreview'};
     even_colors = default_colors.even;
     odd_colors = default_colors.odd;
 }
@@ -40,7 +39,10 @@ local indent_clear_matches = function()
       vim.fn.matchdelete(match_id)
     end
   end
-  api.nvim_win_del_var(0,'indent_guides_matches')
+  local status,_ = pcall(vim.api.nvim_win_get_var,0,'indent_guides_matches')
+  if status then
+    api.nvim_win_del_var(0,'indent_guides_matches')
+  end
 end
 
 local indent_highlight_color =function ()
@@ -108,16 +110,21 @@ end
 
 local indent_guides_enable = function()
   local new_opts = M.options
-  local buf_ft = vim.bo.filetype
+  local buf_ft = vim.api.nvim_buf_get_option(0,'filetype')
 
   if has_value(new_opts.exclude_filetypes,buf_ft) then
+    indent_clear_matches()
+    return
+  end
+
+  if next(indent_get_matches()) ~= nil then
     return
   end
 
   indent_highlight_color()
-  local matches = indent_get_matches()
-  local indent_guides = coroutine.create(render_indent_guides)
 
+  local indent_guides = coroutine.create(render_indent_guides)
+  local matches = {}
   local indent_render = function()
     while true do
       local _,group,column_start,guide_size,indent_size = coroutine.resume(indent_guides)
@@ -159,7 +166,7 @@ function M.indent_guides_disable()
 end
 
 function  M.indent_guides_augroup()
-  local definition = {'BufRead','FileType'}
+  local definition = {'BufEnter','FileType'}
   vim.api.nvim_command('augroup indent_guides_nvim')
   vim.api.nvim_command('autocmd!')
   for _, def in ipairs(definition) do
