@@ -161,7 +161,7 @@ function M.indent_guides_disable()
   vim.api.nvim_command('augroup END')
 end
 
-function M.indent_guides_setup(user_opts)
+function M.setup(user_opts)
   local opts = user_opts or {}
   new_opts = vim.tbl_extend('force',get_defualt_options(),opts)
 end
