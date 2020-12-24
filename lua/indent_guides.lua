@@ -16,8 +16,7 @@ local get_defualt_options = function()
 
   local default_opts={
     indent_levels = 30;
-    indent_char = '|';
-    indent_guide_size = 0;
+    indent_guide_size = 1;
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = false;
@@ -145,7 +144,7 @@ local indent_enabled = true
 
 function M.indent_guides_enable()
   if next(new_opts) == nil then
-    M.indent_guides_setup()
+    M.setup()
   end
   indent_guides_enable()
   if not indent_enabled then
