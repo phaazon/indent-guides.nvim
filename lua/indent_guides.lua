@@ -1,28 +1,33 @@
 local M = {}
 local vim,api = vim,vim.api
+local new_opts = {}
 
-local default_colors = {
-  even = {
-    fg = '#2E323A';
-    bg = '#34383F';
+local get_defualt_options = function()
+  local default_colors = {
+    even = {
+      fg = '#2E323A';
+      bg = '#34383F';
+    };
+    odd = {
+      fg = '#34383F';
+      bg = '#2E323A';
+    };
   };
-  odd = {
-    fg = '#34383F';
-    bg = '#2E323A';
-  };
-};
 
-M.options = {
+  local default_opts={
     indent_levels = 30;
+    indent_char = '|';
     indent_guide_size = 0;
     indent_start_level = 1;
     indent_space_guides = true;
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help','dashboard','dashpreview'};
+    exclude_filetypes = {'help','dashboard','dashpreview','LuaTree','vista','sagahover'};
     even_colors = default_colors.even;
     odd_colors = default_colors.odd;
-}
+  }
+  return default_opts
+end
 
 local indent_get_matches = function()
   local has_matches,matches = pcall(api.nvim_win_get_var,0,'indent_guides_matches')
@@ -46,21 +51,11 @@ local indent_clear_matches = function()
 end
 
 local indent_highlight_color =function ()
-  local new_opts = M.options
-  local even_colors = new_opts.even_colors or {}
-  local odd_colors = new_opts.odd_colors or {}
+  local even = new_opts.even_colors
+  local odd = new_opts.odd_colors
 
-  local even = {
-    even_colors.fg or default_colors.even.fg,
-    even_colors.bg or default_colors.even.bg,
-  }
-  local odd = {
-    odd_colors.fg or default_colors.odd.fg,
-    odd_colors.bg or default_colors.odd.bg,
-  }
-
-  api.nvim_command('hi IndentGuidesEven guifg=' .. even[1] .. ' guibg='.. even[2])
-  api.nvim_command('hi IndentGuidesOdd guifg=' .. odd[1] .. ' guibg='.. odd[2])
+  api.nvim_command('hi IndentGuidesEven guifg=' .. even['fg'] .. ' guibg='.. even['bg'])
+  api.nvim_command('hi IndentGuidesOdd guifg=' .. odd['fg'] .. ' guibg='.. odd['bg'])
 end
 
 local indent_highlight_pattern= function(indent_pattern,column_start,indent_size)
@@ -81,7 +76,6 @@ local has_value = function(tbl,val)
 end
 
 local render_indent_guides = function()
-  local new_opts = M.options
   local indent_size = 0
   if vim.bo.shiftwidth > 0 and vim.bo.expandtab then
     indent_size = vim.bo.shiftwidth
@@ -109,8 +103,7 @@ local render_indent_guides = function()
 end
 
 local indent_guides_enable = function()
-  local new_opts = M.options
-  local buf_ft = vim.api.nvim_buf_get_option(0,'filetype')
+  local buf_ft = api.nvim_buf_get_option(0,'filetype')
 
   if has_value(new_opts.exclude_filetypes,buf_ft) then
     indent_clear_matches()
@@ -151,6 +144,9 @@ end
 local indent_enabled = true
 
 function M.indent_guides_enable()
+  if next(new_opts) == nil then
+    M.indent_guides_setup()
+  end
   indent_guides_enable()
   if not indent_enabled then
     M.indent_guides_augroup()
@@ -165,15 +161,16 @@ function M.indent_guides_disable()
   vim.api.nvim_command('augroup END')
 end
 
+function M.indent_guides_setup(user_opts)
+  local opts = user_opts or {}
+  new_opts = vim.tbl_extend('force',get_defualt_options(),opts)
+end
+
 function  M.indent_guides_augroup()
-  local definition = {'BufEnter','FileType'}
-  vim.api.nvim_command('augroup indent_guides_nvim')
-  vim.api.nvim_command('autocmd!')
-  for _, def in ipairs(definition) do
-    local command = string.format('autocmd %s * lua require("indent_guides").indent_guides_enable()',def)
-    vim.api.nvim_command(command)
-  end
-  vim.api.nvim_command('augroup END')
+  api.nvim_command('augroup indent_guides_nvim')
+  api.nvim_command('autocmd!')
+  api.nvim_command('autocmd BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
+  api.nvim_command('augroup END')
 end
 
 return M
