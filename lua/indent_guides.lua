@@ -102,16 +102,16 @@ local render_indent_guides = function()
 end
 
 local indent_guides_enable = function()
-  local buf_ft = vim.bo.filetype
+  local buf_ft = api.nvim_buf_get_option(0,'filetype')
 
   if has_value(new_opts.exclude_filetypes,buf_ft) then
     indent_clear_matches()
     return
   end
 
-  -- if next(indent_get_matches()) ~= nil then
-  --   return
-  -- end
+  if next(indent_get_matches()) ~= nil then
+    return
+  end
 
   indent_highlight_color()
 
