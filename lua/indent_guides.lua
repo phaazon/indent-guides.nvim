@@ -21,7 +21,7 @@ local get_defualt_options = function()
     indent_space_guides = true;
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover'};
+    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature'};
     even_colors = default_colors.even;
     odd_colors = default_colors.odd;
   }
