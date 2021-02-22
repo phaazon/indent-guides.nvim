@@ -15,6 +15,7 @@ let g:indent_guides_nvim =1
 " Commands
 command! -bar IndentGuidesEnable lua require('indent_guides').indent_guides_enable()
 command! -bar IndentGuidesDisable lua require('indent_guides').indent_guides_disable()
+command! -bar IndentGuidesToggle lua require('indent_guides').indent_guides_toggle()
 
 lua require('indent_guides').indent_guides_augroup()
 

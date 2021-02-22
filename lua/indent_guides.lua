@@ -2,7 +2,7 @@ local M = {}
 local vim,api = vim,vim.api
 local new_opts = {}
 
-local get_defualt_options = function()
+local get_default_options = function()
   local default_colors = {
     even = {
       fg = '#2E323A';
@@ -160,9 +160,18 @@ function M.indent_guides_disable()
   vim.api.nvim_command('augroup END')
 end
 
+function M.indent_guides_toggle()
+    if indent_enabled then
+        M.indent_guides_disable()
+    else
+        indent_enabled = true
+        M.indent_guides_enable()
+    end
+end
+
 function M.setup(user_opts)
   local opts = user_opts or {}
-  new_opts = vim.tbl_extend('force',get_defualt_options(),opts)
+  new_opts = vim.tbl_extend('force',get_default_options(),opts)
 end
 
 function  M.indent_guides_augroup()
