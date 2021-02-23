@@ -12,7 +12,7 @@ local get_default_options = function()
       fg = '#34383F';
       bg = '#2E323A';
     };
-  };
+  }
 
   local default_opts={
     indent_levels = 30;
@@ -28,24 +28,17 @@ local get_default_options = function()
   return default_opts
 end
 
-local indent_get_matches = function()
-  local has_matches,matches = pcall(api.nvim_win_get_var,0,'indent_guides_matches')
-  if has_matches then
-    return matches
-  end
-  return {}
+local indent_init_matches = function()
+  vim.w.indent_guides_matches = vim.fn.exists('w:indent_guides_matches') == 1 and vim.w.indent_guides_matches or {}
 end
 
 local indent_clear_matches = function()
-  local matches = indent_get_matches()
-  if next(matches) ~= nil then
-    for _,match_id in ipairs(matches) do
+  indent_init_matches()
+  if next(vim.w.indent_guides_matches) ~= nil then
+    for key,match_id in ipairs(vim.w.indent_guides_matches) do
       vim.fn.matchdelete(match_id)
+      table.remove(vim.w.indent_guides_matches,key)
     end
-  end
-  local status,_ = pcall(vim.api.nvim_win_get_var,0,'indent_guides_matches')
-  if status then
-    api.nvim_win_del_var(0,'indent_guides_matches')
   end
 end
 
@@ -74,14 +67,18 @@ local has_value = function(tbl,val)
   return false
 end
 
-local render_indent_guides = function()
+local get_indent_size = function ()
   local indent_size = 0
   if vim.bo.shiftwidth > 0 and vim.bo.expandtab then
     indent_size = vim.bo.shiftwidth
   else
     indent_size = vim.bo.tabstop
   end
+  return indent_size
+end
 
+local render_indent_guides = function()
+  local indent_size = get_indent_size()
   local guide_size = new_opts['indent_guide_size']
   if guide_size == 0 or guide_size > indent_size then
     guide_size = indent_size
@@ -101,6 +98,30 @@ local render_indent_guides = function()
   end
 end
 
+local uv = vim.loop
+
+function M.render_blank_line()
+  local ns = 'indent_guides_neovim'
+  local indent_namespace = 0
+  if not api.nvim_get_namespaces()[ns] then
+    indent_namespace = vim.fn.nvim_create_namespace(ns)
+  else
+    indent_namespace = api.nvim_get_namespaces()[ns]
+  end
+
+  local async_render_blank
+  async_render_blank = uv.new_async(vim.schedule_wrap(function ()
+    local lines = api.nvim_buf_get_lines(0,0,-1,false)
+    local indent
+    for key,text in ipairs(lines) do
+      if text == "" then
+        for i=1,5,1 do
+        end
+      end
+    end
+  end))
+end
+
 local indent_guides_enable = function()
   local buf_ft = api.nvim_buf_get_option(0,'filetype')
 
@@ -109,11 +130,8 @@ local indent_guides_enable = function()
     return
   end
 
-  if next(indent_get_matches()) ~= nil then
-    return
-  end
-
   indent_highlight_color()
+  indent_clear_matches()
 
   local indent_guides = coroutine.create(render_indent_guides)
   local matches = {}
@@ -137,7 +155,8 @@ local indent_guides_enable = function()
   end
 
   indent_render()
-  api.nvim_win_set_var(0,'indent_guides_matches',matches)
+  vim.w.indent_guides_matches = matches
+  M.render_blank_line()
 end
 
 local indent_enabled = true
@@ -161,12 +180,12 @@ function M.indent_guides_disable()
 end
 
 function M.indent_guides_toggle()
-    if indent_enabled then
-        M.indent_guides_disable()
-    else
-        indent_enabled = true
-        M.indent_guides_enable()
-    end
+  if indent_enabled then
+    M.indent_guides_disable()
+  else
+    indent_enabled = true
+    M.indent_guides_enable()
+  end
 end
 
 function M.setup(user_opts)
@@ -178,6 +197,7 @@ function  M.indent_guides_augroup()
   api.nvim_command('augroup indent_guides_nvim')
   api.nvim_command('autocmd!')
   api.nvim_command('autocmd BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
+  api.nvim_command('autocmd CursorHoldI * lua require("indent_guides").render_blank_line()')
   api.nvim_command('augroup END')
 end
 
