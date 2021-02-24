@@ -23,7 +23,7 @@ lua require('indent_guides').setup({
 
 ## Preview
 
-![1](https://user-images.githubusercontent.com/41671631/99146693-69bf1a80-26b5-11eb-862e-6f9f7edfb715.png)
+![QQ20210224-214759](https://user-images.githubusercontent.com/41671631/109009920-1e6fcb80-76ea-11eb-82e8-a2f4c72c6014.png)
 
 ## Acknowledgement
 
