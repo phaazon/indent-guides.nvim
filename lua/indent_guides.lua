@@ -99,9 +99,11 @@ local render_indent_guides = function()
 end
 
 local uv = vim.loop
+local keyword = { ['for'] = true,['if'] = true,['while'] = true}
 
 function M.render_blank_line()
   local ns = 'indent_guides_neovim'
+  local indent_size = get_indent_size()
   local indent_namespace = 0
   if not api.nvim_get_namespaces()[ns] then
     indent_namespace = vim.fn.nvim_create_namespace(ns)
@@ -112,14 +114,44 @@ function M.render_blank_line()
   local async_render_blank
   async_render_blank = uv.new_async(vim.schedule_wrap(function ()
     local lines = api.nvim_buf_get_lines(0,0,-1,false)
-    local indent
+    local prev_line_guides = {}
     for key,text in ipairs(lines) do
-      if text == "" then
-        for i=1,5,1 do
+      local idt = vim.fn.cindent(key)
+      if #text == 0 and idt > 0 then
+        local tbl = vim.fn.range(idt / indent_size)
+        local guides = {}
+        if #lines[key - 1] == 0 then
+          guides = prev_line_guides
+        else
+          for k,level in pairs(tbl) do
+            if level % 2 == 0 then
+              guides[#guides+1] = {' ','IndentGuidesEven'}
+            else
+              guides[#guides+1] = {' ','IndentGuidesOdd'}
+            end
+            if #tbl > 1 then
+              guides[#guides+1] = {' ',''}
+            end
+            if keyword[lines[key-1]:match('%S+')] and k == #tbl then
+              if #tbl == 1 then
+                guides[#guides+1] = {' ',''}
+              end
+              guides[#guides+1] = {' ','IndentGuidesOdd'}
+            end
+          end
+          prev_line_guides = guides
         end
+
+        api.nvim_buf_set_extmark(0,indent_namespace,key - 1,0,{
+          virt_text = guides,
+          virt_text_pos = 'overlay'
+        })
       end
     end
+    async_render_blank:close()
   end))
+
+  async_render_blank:send()
 end
 
 local indent_guides_enable = function()
@@ -197,7 +229,7 @@ function  M.indent_guides_augroup()
   api.nvim_command('augroup indent_guides_nvim')
   api.nvim_command('autocmd!')
   api.nvim_command('autocmd BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
-  api.nvim_command('autocmd CursorHoldI * lua require("indent_guides").render_blank_line()')
+  api.nvim_command('autocmd TextChanged,TextChangedI * lua require("indent_guides").render_blank_line()')
   api.nvim_command('augroup END')
 end
 
