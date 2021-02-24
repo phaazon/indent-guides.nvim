@@ -5,12 +5,12 @@ local new_opts = {}
 local get_default_options = function()
   local default_colors = {
     even = {
-      fg = '#2E323A';
-      bg = '#34383F';
+      fg = '#2a3834';
+      bg = '#332b36';
     };
     odd = {
-      fg = '#34383F';
-      bg = '#2E323A';
+      fg = '#332b36';
+      bg = '#2a3834';
     };
   }
 
@@ -47,7 +47,9 @@ local indent_highlight_color =function ()
   local odd = new_opts.odd_colors
 
   api.nvim_command('hi IndentGuidesEven guifg=' .. even['fg'] .. ' guibg='.. even['bg'])
+  api.nvim_command('hi IndentGuidesEvenVirtext guifg=' .. even['bg'] .. ' guibg='.. even['fg'])
   api.nvim_command('hi IndentGuidesOdd guifg=' .. odd['fg'] .. ' guibg='.. odd['bg'])
+  api.nvim_command('hi IndentGuidesOddVirtext guifg=' .. odd['bg'] .. ' guibg='.. odd['fg'])
 end
 
 local indent_highlight_pattern= function(indent_pattern,column_start,indent_size)
@@ -125,9 +127,9 @@ function M.render_blank_line()
         else
           for k,level in pairs(tbl) do
             if level % 2 == 0 then
-              guides[#guides+1] = {' ','IndentGuidesEven'}
+              guides[#guides+1] = {' ','IndentGuidesEvenVirtext'}
             else
-              guides[#guides+1] = {' ','IndentGuidesOdd'}
+              guides[#guides+1] = {' ','IndentGuidesOddVirtext'}
             end
             if #tbl > 1 then
               guides[#guides+1] = {' ',''}
@@ -136,12 +138,15 @@ function M.render_blank_line()
               if #tbl == 1 then
                 guides[#guides+1] = {' ',''}
               end
-              guides[#guides+1] = {' ','IndentGuidesOdd'}
+              if guides[#guides - 1][2]  == 'IndentGuidesEvenVirtext' then
+                guides[#guides+1] = {' ','IndentGuidesOddVirtext'}
+              else
+                guides[#guides+1] = {' ','IndentGuidesEvenVirtext'}
+              end
             end
           end
           prev_line_guides = guides
         end
-
         api.nvim_buf_set_extmark(0,indent_namespace,key - 1,0,{
           virt_text = guides,
           virt_text_pos = 'overlay'
@@ -195,7 +200,7 @@ local indent_enabled = true
 
 function M.indent_guides_enable()
   if next(new_opts) == nil then
-    M.setup()
+    new_opts = get_default_options()
   end
   indent_guides_enable()
   if not indent_enabled then
@@ -221,8 +226,18 @@ function M.indent_guides_toggle()
 end
 
 function M.setup(user_opts)
-  local opts = user_opts or {}
-  new_opts = vim.tbl_extend('force',get_default_options(),opts)
+  user_opts = user_opts or {}
+  local default_opts = get_default_options()
+  if next(user_opts) ~= nil then
+    for key,val in pairs(user_opts) do
+      if not default_opts[key] then
+        print('[IndentGuides] Wrong filed')
+        return
+      end
+      default_opts[key] = val
+    end
+  end
+  new_opts = default_opts
 end
 
 function  M.indent_guides_augroup()
