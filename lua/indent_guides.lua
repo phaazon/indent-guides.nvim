@@ -118,7 +118,7 @@ function M.render_blank_line()
     for key,text in ipairs(lines) do
       local idt = vim.fn.cindent(key)
       if #text == 0 and idt > 0 then
-        local tbl = vim.fn.range(idt / indent_size)
+        local tbl = vim.fn.range(math.floor(idt / indent_size))
         local guides = {}
         if #lines[key - 1] == 0 then
           guides = prev_line_guides
