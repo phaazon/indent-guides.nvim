@@ -21,10 +21,6 @@ lua require('indent_guides').setup({
 })
 ```
 
-## Preview
-
-![QQ20210224-214759](https://user-images.githubusercontent.com/41671631/109009920-1e6fcb80-76ea-11eb-82e8-a2f4c72c6014.png)
-
 ## Acknowledgement
 
 [nathanaelkane/vim-indent-guides](https://github.com/nathanaelkane/vim-indent-guides)
