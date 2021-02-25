@@ -116,6 +116,9 @@ function M.render_blank_line()
 
   local async_render_blank
   async_render_blank = uv.new_async(vim.schedule_wrap(function ()
+    if has_value(new_opts.exclude_filetypes,vim.bo.filetype) then
+      return
+    end
     local lines = api.nvim_buf_get_lines(0,0,-1,false)
     local prev_line_guides = {}
     for key,text in ipairs(lines) do
@@ -158,7 +161,6 @@ function M.render_blank_line()
     end
     async_render_blank:close()
   end))
-
   async_render_blank:send()
 end
 
