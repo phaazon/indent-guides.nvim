@@ -105,7 +105,10 @@ local render_indent_guides = function()
 end
 
 local uv = vim.loop
-local keyword = { ['for'] = true,['if'] = true,['while'] = true}
+local keyword = {
+  ['for'] = true,['if'] = true,['while'] = true,
+  [';'] = true
+}
 
 function M.render_blank_line()
   local indent_size = get_indent_size()
@@ -132,7 +135,9 @@ function M.render_blank_line()
             if #tbl > 1 then
               guides[#guides+1] = {' ',''}
             end
-            if keyword[lines[key-1]:match('%S+')] and k == #tbl then
+            local fist_char = lines[key-1]:match('%S+')
+            local last_char = lines[key-1]:sub(#lines[key-1],-1)
+            if keyword[fist_char] and not keyword[last_char] and k == #tbl then
               if #tbl == 1 then
                 guides[#guides+1] = {' ',''}
               end
