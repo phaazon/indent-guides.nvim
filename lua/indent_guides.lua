@@ -10,9 +10,9 @@ local get_default_options = function()
     indent_space_guides = true;
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature'};
-    even_colors = { fg = '#2a3834','#332b36' };
-    odd_colors = { fg = '#332b36','#2a3834' };
+    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature','packer'};
+    even_colors = { fg = '#2a3834',bg = '#332b36' };
+    odd_colors = { fg = '#332b36',bg = '#2a3834' };
   }
   return default_opts
 end
@@ -21,14 +21,29 @@ local indent_init_matches = function()
   vim.w.indent_guides_matches = vim.fn.exists('w:indent_guides_matches') == 1 and vim.w.indent_guides_matches or {}
 end
 
+local function get_indnet_namespace()
+  local ns = 'indent_guides_neovim'
+  local indent_namespace = 0
+  if not api.nvim_get_namespaces()[ns] then
+    indent_namespace = vim.fn.nvim_create_namespace(ns)
+  else
+    indent_namespace = api.nvim_get_namespaces()[ns]
+  end
+  return indent_namespace
+end
+
 local indent_clear_matches = function()
   indent_init_matches()
-  if next(vim.w.indent_guides_matches) ~= nil then
-    for key,match_id in ipairs(vim.w.indent_guides_matches) do
-      vim.fn.matchdelete(match_id)
-      table.remove(vim.w.indent_guides_matches,key)
+  local matches = vim.w.indent_guides_matches
+  if next(matches) ~= nil then
+    for i = 1,#vim.w.indent_guides_matches,1 do
+      vim.fn.matchdelete(vim.w.indent_guides_matches[i])
+      table.remove(matches,1)
     end
   end
+  vim.w.indent_guides_matches = matches
+  local indent_namespace = get_indnet_namespace()
+  api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
 end
 
 local indent_highlight_color =function ()
@@ -93,14 +108,8 @@ local uv = vim.loop
 local keyword = { ['for'] = true,['if'] = true,['while'] = true}
 
 function M.render_blank_line()
-  local ns = 'indent_guides_neovim'
   local indent_size = get_indent_size()
-  local indent_namespace = 0
-  if not api.nvim_get_namespaces()[ns] then
-    indent_namespace = vim.fn.nvim_create_namespace(ns)
-  else
-    indent_namespace = api.nvim_get_namespaces()[ns]
-  end
+  local indent_namespace = get_indnet_namespace()
 
   local async_render_blank
   async_render_blank = uv.new_async(vim.schedule_wrap(function ()
@@ -149,9 +158,7 @@ function M.render_blank_line()
 end
 
 local indent_guides_enable = function()
-  local buf_ft = api.nvim_buf_get_option(0,'filetype')
-
-  if has_value(new_opts.exclude_filetypes,buf_ft) then
+  if has_value(new_opts.exclude_filetypes,vim.bo.filetype) then
     indent_clear_matches()
     return
   end
