@@ -11,8 +11,8 @@ local get_default_options = function()
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature','packer'};
-    even_colors = { fg = '#2a3834',bg = '#332b36' };
-    odd_colors = { fg = '#332b36',bg = '#2a3834' };
+    even_colors = { fg = '#2b3834',bg = '#2d3542' };
+    odd_colors = { fg = '#2d3542',bg = '#2b3834' };
   }
   return default_opts
 end
