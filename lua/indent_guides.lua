@@ -3,17 +3,6 @@ local vim,api = vim,vim.api
 local new_opts = {}
 
 local get_default_options = function()
-  local default_colors = {
-    even = {
-      fg = '#2a3834';
-      bg = '#332b36';
-    };
-    odd = {
-      fg = '#332b36';
-      bg = '#2a3834';
-    };
-  }
-
   local default_opts={
     indent_levels = 30;
     indent_guide_size = 1;
@@ -22,8 +11,8 @@ local get_default_options = function()
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
     exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature'};
-    even_colors = default_colors.even;
-    odd_colors = default_colors.odd;
+    even_colors = { fg = '#2a3834','#332b36' };
+    odd_colors = { fg = '#332b36','#2a3834' };
   }
   return default_opts
 end
@@ -226,18 +215,8 @@ function M.indent_guides_toggle()
 end
 
 function M.setup(user_opts)
-  user_opts = user_opts or {}
-  local default_opts = get_default_options()
-  if next(user_opts) ~= nil then
-    for key,val in pairs(user_opts) do
-      if not default_opts[key] then
-        print('[IndentGuides] Wrong filed')
-        return
-      end
-      default_opts[key] = val
-    end
-  end
-  new_opts = default_opts
+  local opts = user_opts or {}
+  new_opts = vim.tbl_extend('force',get_default_options(),opts)
 end
 
 function  M.indent_guides_augroup()
