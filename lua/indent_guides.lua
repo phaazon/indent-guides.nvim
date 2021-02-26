@@ -7,6 +7,8 @@ local get_default_options = function()
     indent_levels = 30;
     indent_guide_size = 1;
     indent_start_level = 1;
+    --FIXME:
+    indent_pretty_mode = false;
     indent_space_guides = true;
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
@@ -136,7 +138,9 @@ function M.render_blank_line()
               guides[#guides+1] = {' ','IndentGuidesOddVirtext'}
             end
             if #tbl > 1 then
-              guides[#guides+1] = {' ',''}
+              for i=1,indent_size -1 , 1 do
+                guides[#guides+1] = {' ',''}
+              end
             end
             local fist_char = lines[key-1]:match('%S+')
             local last_char = lines[key-1]:sub(#lines[key-1],-1)
@@ -196,7 +200,9 @@ local indent_guides_enable = function()
 
   indent_render()
   vim.w.indent_guides_matches = matches
-  M.render_blank_line()
+  if new_opts.indent_pretty_mode then
+    M.render_blank_line()
+  end
 end
 
 local indent_enabled = true
@@ -237,7 +243,9 @@ function  M.indent_guides_augroup()
   api.nvim_command('augroup indent_guides_nvim')
   api.nvim_command('autocmd!')
   api.nvim_command('autocmd BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
-  api.nvim_command('autocmd TextChanged,TextChangedI * lua require("indent_guides").render_blank_line()')
+  if new_opts.indent_pretty_mode then
+    api.nvim_command('autocmd TextChanged,TextChangedI * lua require("indent_guides").render_blank_line()')
+  end
   api.nvim_command('augroup END')
 end
 
