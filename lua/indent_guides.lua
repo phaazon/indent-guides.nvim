@@ -19,9 +19,7 @@ local get_default_options = function()
   return default_opts
 end
 
-local indent_init_matches = function()
-  vim.w.indent_guides_matches = vim.fn.exists('w:indent_guides_matches') == 1 and vim.w.indent_guides_matches or {}
-end
+local win_indent_matches = {}
 
 local function get_indnet_namespace()
   local ns = 'indent_guides_neovim'
@@ -35,15 +33,13 @@ local function get_indnet_namespace()
 end
 
 local indent_clear_matches = function()
-  indent_init_matches()
-  local matches = vim.w.indent_guides_matches
-  if next(matches) ~= nil then
-    for i = 1,#vim.w.indent_guides_matches,1 do
-      vim.fn.matchdelete(vim.w.indent_guides_matches[i])
-      table.remove(matches,1)
+  local current_winid = api.nvim_get_current_win()
+  if win_indent_matches[current_winid] then
+    for _,match_id in pairs(win_indent_matches[current_winid]) do
+      vim.fn.matchdelete(match_id)
     end
+    win_indent_matches[current_winid] = {}
   end
-  vim.w.indent_guides_matches = matches
   local indent_namespace = get_indnet_namespace()
   api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
 end
@@ -178,18 +174,19 @@ local indent_guides_enable = function()
   indent_clear_matches()
 
   local indent_guides = coroutine.create(render_indent_guides)
-  local matches = {}
+  local current_winid = api.nvim_get_current_win()
+  win_indent_matches[current_winid] = {}
   local indent_render = function()
     while true do
       local _,group,column_start,guide_size,indent_size = coroutine.resume(indent_guides)
       if column_start ~= nil then
         if new_opts['indent_space_guides'] then
           local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
-          table.insert(matches,vim.fn.matchadd(group,soft_pattern))
+          table.insert(win_indent_matches[current_winid],vim.fn.matchadd(group,soft_pattern))
         end
         if new_opts['indent_tab_guides'] then
           local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
-          table.insert(matches,vim.fn.matchadd(group,hard_pattern))
+          table.insert(win_indent_matches[current_winid],vim.fn.matchadd(group,hard_pattern))
         end
       end
       if coroutine.status(indent_guides) == 'dead' then
@@ -199,7 +196,6 @@ local indent_guides_enable = function()
   end
 
   indent_render()
-  vim.w.indent_guides_matches = matches
   if new_opts.indent_pretty_mode then
     M.render_blank_line()
   end
@@ -219,7 +215,16 @@ end
 
 function M.indent_guides_disable()
   indent_enabled = false
-  indent_clear_matches()
+  for winid,matches in pairs(win_indent_matches) do
+    if api.nvim_win_is_valid(winid) then
+      for _,id in ipairs(matches) do
+        vim.fn.matchdelete(id,winid)
+      end
+      win_indent_matches[winid] = {}
+    else
+      win_indent_matches[winid] = {}
+    end
+  end
   vim.api.nvim_command('augroup indent_guides_nvim')
   vim.api.nvim_command('autocmd!')
   vim.api.nvim_command('augroup END')
@@ -239,10 +244,14 @@ function M.setup(user_opts)
   new_opts = vim.tbl_extend('force',get_default_options(),opts)
 end
 
+function M.get_indent_matches()
+  print(vim.inspect(win_indent_matches))
+end
+
 function  M.indent_guides_augroup()
   api.nvim_command('augroup indent_guides_nvim')
   api.nvim_command('autocmd!')
-  api.nvim_command('autocmd BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
+  api.nvim_command('autocmd WinEnter,BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
   if new_opts.indent_pretty_mode then
     api.nvim_command('autocmd TextChanged,TextChangedI * lua require("indent_guides").render_blank_line()')
   end
