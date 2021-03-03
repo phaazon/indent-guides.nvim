@@ -12,7 +12,7 @@ local get_default_options = function()
     indent_space_guides = true;
     indent_tab_guides = false;
     indent_soft_pattern = '\\s';
-    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature','packer','log'};
+    exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature','packer','log','lspsagafinder'};
     even_colors = { fg = '#23272e',bg = '#23272e' };
     odd_colors = { fg = '#23272e',bg = '#23272e' };
   }
