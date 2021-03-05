@@ -34,11 +34,11 @@ end
 
 local indent_clear_matches = function()
   local current_winid = api.nvim_get_current_win()
-  if win_indent_matches[current_winid] then
+  if win_indent_matches[current_winid] and api.nvim_win_is_valid(current_winid) then
     for _,match_id in pairs(win_indent_matches[current_winid]) do
-      vim.fn.matchdelete(match_id)
+      vim.fn.matchdelete(match_id,current_winid)
+      table.remove(win_indent_matches[current_winid],1)
     end
-    win_indent_matches[current_winid] = {}
   end
   local indent_namespace = get_indnet_namespace()
   api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
@@ -60,15 +60,6 @@ local indent_highlight_pattern= function(indent_pattern,column_start,indent_size
   pattern = pattern .. indent_pattern .. '*\\%' .. (column_start + indent_size) .. 'v'
   pattern = pattern .. '\\ze'
   return pattern
-end
-
-local has_value = function(tbl,val)
-  for _,v in ipairs(tbl) do
-    if v == val then
-      return true
-    end
-  end
-  return false
 end
 
 local get_indent_size = function ()
@@ -114,7 +105,7 @@ function M.render_blank_line()
 
   local async_render_blank
   async_render_blank = uv.new_async(vim.schedule_wrap(function ()
-    if has_value(new_opts.exclude_filetypes,vim.bo.filetype) then
+    if vim.fn.index(new_opts.exclude_filetypes,vim.bo.filetype) ~= -1 then
       return
     end
     local lines = api.nvim_buf_get_lines(0,0,-1,false)
@@ -165,7 +156,7 @@ function M.render_blank_line()
 end
 
 local indent_guides_enable = function()
-  if has_value(new_opts.exclude_filetypes,vim.bo.filetype) then
+  if vim.fn.index(new_opts.exclude_filetypes,vim.bo.filetype) ~= -1 then
     indent_clear_matches()
     return
   end
@@ -251,7 +242,7 @@ end
 function  M.indent_guides_augroup()
   api.nvim_command('augroup indent_guides_nvim')
   api.nvim_command('autocmd!')
-  api.nvim_command('autocmd WinEnter,BufEnter,FileType * lua require("indent_guides").indent_guides_enable()')
+  api.nvim_command('autocmd WinEnter,BufEnter,FileType * lua vim.schedule(require("indent_guides").indent_guides_enable)')
   if new_opts.indent_pretty_mode then
     api.nvim_command('autocmd TextChanged,TextChangedI * lua require("indent_guides").render_blank_line()')
   end
