@@ -34,11 +34,11 @@ end
 
 local indent_clear_matches = function()
   local current_winid = api.nvim_get_current_win()
-  if win_indent_matches[current_winid] and api.nvim_win_is_valid(current_winid) then
+  if win_indent_matches[current_winid] then
     for _,match_id in pairs(win_indent_matches[current_winid]) do
       vim.fn.matchdelete(match_id,current_winid)
-      table.remove(win_indent_matches[current_winid],1)
     end
+    win_indent_matches[current_winid] = {}
   end
   local indent_namespace = get_indnet_namespace()
   api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
@@ -161,19 +161,21 @@ local indent_guides_enable = function()
     return
   end
 
+  local current_winid = api.nvim_get_current_win()
+  win_indent_matches[current_winid] = win_indent_matches[current_winid] or {}
+
   indent_highlight_color()
   indent_clear_matches()
 
   local indent_guides = coroutine.create(render_indent_guides)
-  local current_winid = api.nvim_get_current_win()
-  win_indent_matches[current_winid] = {}
   local indent_render = function()
     while true do
       local _,group,column_start,guide_size,indent_size = coroutine.resume(indent_guides)
       if column_start ~= nil then
         if new_opts['indent_space_guides'] then
           local soft_pattern = indent_highlight_pattern(new_opts['indent_soft_pattern'],column_start,guide_size)
-          table.insert(win_indent_matches[current_winid],vim.fn.matchadd(group,soft_pattern))
+          local id = vim.fn.matchadd(group,soft_pattern)
+          table.insert(win_indent_matches[current_winid],id)
         end
         if new_opts['indent_tab_guides'] then
           local hard_pattern = indent_highlight_pattern('\\t',column_start,indent_size)
@@ -207,15 +209,11 @@ end
 function M.indent_guides_disable()
   indent_enabled = false
   for winid,matches in pairs(win_indent_matches) do
-    if api.nvim_win_is_valid(winid) then
-      for _,id in ipairs(matches) do
-        vim.fn.matchdelete(id,winid)
-      end
-      win_indent_matches[winid] = {}
-    else
-      win_indent_matches[winid] = {}
+    for _,id in ipairs(matches) do
+      vim.fn.matchdelete(id,winid)
     end
   end
+  win_indent_matches = {}
   vim.api.nvim_command('augroup indent_guides_nvim')
   vim.api.nvim_command('autocmd!')
   vim.api.nvim_command('augroup END')
