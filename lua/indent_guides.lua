@@ -21,15 +21,8 @@ end
 
 local win_indent_matches = {}
 
-local function get_indnet_namespace()
-  local ns = 'indent_guides_neovim'
-  local indent_namespace = 0
-  if not api.nvim_get_namespaces()[ns] then
-    indent_namespace = vim.fn.nvim_create_namespace(ns)
-  else
-    indent_namespace = api.nvim_get_namespaces()[ns]
-  end
-  return indent_namespace
+local function get_indent_namespace()
+  return api.nvim_create_namespace('indent_guides_neovim')
 end
 
 local indent_clear_matches = function()
@@ -40,7 +33,7 @@ local indent_clear_matches = function()
     end
     win_indent_matches[current_winid] = {}
   end
-  local indent_namespace = get_indnet_namespace()
+  local indent_namespace = get_indent_namespace()
   api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
 end
 
@@ -101,7 +94,7 @@ local keyword = {
 
 function M.render_blank_line()
   local indent_size = get_indent_size()
-  local indent_namespace = get_indnet_namespace()
+  local indent_namespace = get_indent_namespace()
 
   local async_render_blank
   async_render_blank = uv.new_async(vim.schedule_wrap(function ()
@@ -214,9 +207,9 @@ function M.indent_guides_disable()
     end
   end
   win_indent_matches = {}
-  vim.api.nvim_command('augroup indent_guides_nvim')
-  vim.api.nvim_command('autocmd!')
-  vim.api.nvim_command('augroup END')
+  api.nvim_command('augroup indent_guides_nvim')
+  api.nvim_command('autocmd!')
+  api.nvim_command('augroup END')
 end
 
 function M.indent_guides_toggle()
