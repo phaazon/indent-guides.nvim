@@ -15,6 +15,7 @@ local get_default_options = function()
     exclude_filetypes = {'help','dashboard','dashpreview','NvimTree','vista','sagahover','sagasignature','packer','log','lspsagafinder','lspinfo'};
     even_colors = { fg = '#23272e',bg = '#23272e' };
     odd_colors = { fg = '#23272e',bg = '#23272e' };
+    indent_char = ' ';
   }
   return default_opts
 end
@@ -37,14 +38,18 @@ local indent_clear_matches = function()
   api.nvim_buf_clear_namespace(0,indent_namespace,0,-1)
 end
 
-local indent_highlight_color =function ()
+local indent_highlight_color = function ()
   local even = new_opts.even_colors
+  local even_fg = even['fg'] and string.format('guifg=%s', even['fg']) or ''
+  local even_bg = even['bg'] and string.format('guibg=%s', even['bg']) or ''
   local odd = new_opts.odd_colors
+  local odd_fg = odd.fg and string.format('guifg=%s', odd.fg) or ''
+  local odd_bg = odd.bg and string.format('guibg=%s', odd.bg) or ''
 
-  api.nvim_command('hi IndentGuidesEven guifg=' .. even['fg'] .. ' guibg='.. even['bg'])
-  api.nvim_command('hi IndentGuidesEvenVirtext guifg=' .. even['bg'] .. ' guibg='.. even['fg'])
-  api.nvim_command('hi IndentGuidesOdd guifg=' .. odd['fg'] .. ' guibg='.. odd['bg'])
-  api.nvim_command('hi IndentGuidesOddVirtext guifg=' .. odd['bg'] .. ' guibg='.. odd['fg'])
+  api.nvim_command('hi IndentGuidesEven ' .. even_fg .. ' ' .. even_bg)
+  api.nvim_command('hi IndentGuidesEvenVirtext ' .. even_fg .. ' ' .. even_bg)
+  api.nvim_command('hi IndentGuidesOdd ' .. odd_fg .. ' ' .. odd_bg)
+  api.nvim_command('hi IndentGuidesOddVirtext ' .. odd_fg .. ' ' .. odd_bg)
 end
 
 local indent_highlight_pattern= function(indent_pattern,column_start,indent_size)
@@ -103,6 +108,7 @@ function M.render_blank_line()
     end
     local lines = api.nvim_buf_get_lines(0,0,-1,false)
     local prev_line_guides = {}
+    local indent_char = new_opts.indent_char
     for key,text in ipairs(lines) do
       local idt = vim.fn.cindent(key)
       if #text == 0 and idt > 0 then
@@ -113,9 +119,9 @@ function M.render_blank_line()
         else
           for k,level in pairs(tbl) do
             if level % 2 == 0 then
-              guides[#guides+1] = {' ','IndentGuidesEvenVirtext'}
+              guides[#guides+1] = {indent_char,'IndentGuidesEvenVirtext'}
             else
-              guides[#guides+1] = {' ','IndentGuidesOddVirtext'}
+              guides[#guides+1] = {indent_char,'IndentGuidesOddVirtext'}
             end
             if #tbl > 1 then
               for i=1,indent_size -1 , 1 do
@@ -129,14 +135,15 @@ function M.render_blank_line()
                 guides[#guides+1] = {' ',''}
               end
               if guides[#guides - 1][2]  == 'IndentGuidesEvenVirtext' then
-                guides[#guides+1] = {' ','IndentGuidesOddVirtext'}
+                guides[#guides+1] = {indent_char,'IndentGuidesOddVirtext'}
               else
-                guides[#guides+1] = {' ','IndentGuidesEvenVirtext'}
+                guides[#guides+1] = {indent_char,'IndentGuidesEvenVirtext'}
               end
             end
           end
           prev_line_guides = guides
         end
+
         api.nvim_buf_set_extmark(0,indent_namespace,key - 1,0,{
           virt_text = guides,
           virt_text_pos = 'overlay'
